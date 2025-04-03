@@ -8,10 +8,8 @@
     "typescript": "^4.9.5"
   },
   "scripts": {
-    "build": "tsc",
-    "test": "tsc && jest --silent false",
-    "download-tlds": "curl https://data.iana.org/TLD/tlds-alpha-by-domain.txt -o- | tr '\\n' ' ' | sed 's/ /, /g' > tlds.json",
-    "prepare": "yarn build"
+    "prepare": "tsc",
+    "test": "tsc && jest --silent false"
   },
   "packageManager": "yarn@4.8.1",
   "description": "A library designed to suggest better email domains and reduce errors effectively.",
