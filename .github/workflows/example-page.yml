@@ -22,30 +22,25 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  build:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-      - name: Install dependencies
-        run: npm ci
-      - name: Build
-        run: |
-          npm run download-tlds
-          npm run build
-
-
   build-example:
-    needs: build
     defaults:
       run:
         shell: bash
         working-directory: ./example
     runs-on: ubuntu-latest
     steps:
-
+      - name: Checkout
+        uses: actions/checkout@v4
       - name: Setup Node
         uses: actions/setup-node@v4
+      - name: Install dependencies
+        run: npm ci
+        working-directory: .
+      - name: Build
+        run: |
+          npm run download-tlds
+          npm run build
+        working-directory: .
       - name: Install dependencies
         run: npm ci
       - name: Build
