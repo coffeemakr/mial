@@ -7,3 +7,6 @@
 !.yarn/versions
 
 node_modules/
+mial.js
+mial.d.ts
+tlds.js

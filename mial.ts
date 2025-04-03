@@ -15,19 +15,19 @@ export function normalizeDomain(domain: string): string {
     // We use the browser URL class to punycode the domain.
     try {
         const url = new URL('http://' + domain);
-        domain = url.hostname;    
+        domain = url.hostname;
     } catch {
         // Ignore
     }
     return domain;
-} 
+}
 
 
 /**
- * Checks if the first word has one character omitted in the second word.
+ * Checks if the first or the second word has one character omitted in the other word.
  * @param first 
  * @param second 
- * @returns true if the first word has one character omitted in the second word
+ * @returns True if the first or the second word has one character omitted in the other word.
  */
 function hasOneCharacterOmitted(first: string, second: string): boolean {
     if ((first.length - 1) == second.length) {
@@ -77,41 +77,85 @@ export function hasLevensthein1Distance(first: string, second: string): boolean 
     return distance == 1;
 }
 
+/**
+ * Extracts the top-level domain (TLD) from an email address.
+ * @param mail The email address to extract the TLD from.
+ * @returns The TLD if present, otherwise null.
+ */
+export function extractTLD(mail: string): string | null {
+    const parts = mail.split('@');
+    if (parts.length === 2) {
+        const domainParts = parts[1].split('.');
+        if (domainParts.length > 1) {
+            return domainParts.pop() || null;
+        }
+    }
+    return null;
+}
+
 export class Mial {
-    config: MialConfiguration;
+    private readonly domains: string[];
+    private readonly allowedTLDs?: string[];
 
     constructor(config: MialConfiguration) {
-        this.config = config;
+        this.domains = config.domains;
+        const normalizedTLDs = config.tlds ? config.tlds.map(tld => normalizeDomain(tld)) : [];
+        this.allowedTLDs = normalizedTLDs;
     }
 
-    recommend(mail: String): String | undefined {
+    recommend(mail: string): string | null {
         const parts = mail.split('@');
-        console.log(parts);
         if (parts.length == 2) {
             const domain = normalizeDomain(parts[1]);
-            for (let checkDomain of this.config.domains) {
+            if (this.domains.includes(domain)) {
+                return null; // No recommendation needed
+            }
+
+            for (let checkDomain of this.domains) {
                 if (hasLevensthein1Distance(checkDomain, domain)) {
                     return parts[0] + '@' + checkDomain;
                 }
             }
+
+            // Check for TLD corrections with the same length and 1 character changed
+            const domainParts = domain.split('.');
+            if (domainParts.length > 1) {
+                const tld = domainParts.pop();
+                if (tld && this.allowedTLDs && this.allowedTLDs.length > 0) {
+                    // Check if the TLD is in the list of allowed top level domains
+                    if (this.allowedTLDs.indexOf(tld) < 0) {
+                        const matchingTLDs = this.allowedTLDs.filter(distinctTLD =>
+                            tld.length === distinctTLD.length && hasLevensthein1Distance(tld, distinctTLD)
+                        );
+
+                        if (matchingTLDs.length === 1) {
+                            const tldIndex = domain.lastIndexOf(tld);
+                            const correctedDomain = domain.substring(0, tldIndex) + matchingTLDs[0];
+                            return parts[0] + '@' + correctedDomain;
+                        } else {
+                            console.log(`Multiple TLDs found for ${domain}: ${matchingTLDs.join(', ')}`);
+                        }
+                    }
+                }
+            }
         }
-        return undefined;
+        return null;
     }
 
-    isInvalid(mail: String): boolean {
+    isInvalid(mail: string): boolean {
         const parts = mail.split('@');
         if (parts.length == 2) {
             const domain = normalizeDomain(parts[1]);
             // If the domain is in list of domains, skip the tld check
-            if (this.config.domains && this.config.domains.length > 0) {
-                if (this.config.domains.indexOf(domain) >= 0) {
+            if (this.domains && this.domains.length > 0) {
+                if (this.domains.indexOf(domain) >= 0) {
                     return false;
                 }
             }
-            // If the TLD is not in the list of top level domains, the domain is invalid 
-            if (this.config.tlds && this.config.tlds.length > 0) {
-                const tld = domain.split('.').pop();
-                if (tld && this.config.tlds.indexOf(tld) < 0) {
+            // If the TLD is not in the list of allowed top level domains, the domain is invalid 
+            if (this.allowedTLDs && this.allowedTLDs.length > 0) {
+                const tld = extractTLD(mail);
+                if (tld && this.allowedTLDs.indexOf(tld) < 0) {
                     return true;
                 }
             }

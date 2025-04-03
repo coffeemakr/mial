@@ -1,0 +1,21 @@
+{
+    "name": "mial-example",
+    "version": "1.0.0",
+    "description": "Example usage of the MIAL package",
+    "main": "index.js",
+    "scripts": {
+        "start": "node dist/index.js",
+        "build": "esbuild index.js --bundle --outfile=dist/index.js && cp index.html dist/",
+        "watch": "esbuild index.js --bundle --outfile=dist/index.js --watch",
+        "preview": "http-server dist --port 3000 "
+    },
+    "dependencies": {
+        "mial": "file:.."
+    },
+    "devDependencies": {
+        "esbuild": "^0.25.2",
+        "http-server": "^14.1.1"
+    },
+    "author": "",
+    "license": "MIT"
+}

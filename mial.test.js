@@ -37,6 +37,7 @@ test('recommends correct domains', () => {
     expect(m.recommend('test@bluewin.ch')).toBeFalsy();
     expect(m.recommend('test@bluewi.ch')).toBe("test@bluewin.ch");
     expect(m.recommend('test@bleuwin.ch')).toBe("test@bluewin.ch");
+    expect(m.recommend('test@bluewin.cn')).toBe("test@bluewin.ch");
     expect(m.recommend('dsadsadsadsa@yaho.co.uk')).toBe("dsadsadsadsa@yahoo.co.uk");
     expect(m.recommend('dsadsadsadsa@yaoho.co.uk')).toBe("dsadsadsadsa@yahoo.co.uk");
     expect(m.recommend('user1@gmail.co')).toBe("user1@gmail.com");
@@ -53,17 +54,62 @@ test('recommends correct domains', () => {
     expect(m.recommend('USER6@Unknown.COM')).toBeFalsy();
 });
 
+test('recommends correct TLDs', () => {
+    const m = new mial.Mial({
+        domains: [
+            'gmail.com',
+            'yahoo.co.uk',
+        ],
+        tlds: [
+            'com',
+            'co.uk',
+            'org',
+            'net',
+            'googlo'
+        ]
+    });
+
+    expect(m.recommend('user1@gmail.co')).toBe("user1@gmail.com");
+    expect(m.recommend('user1@gmail.con')).toBe("user1@gmail.com");
+    expect(m.recommend('user1@gmail.col')).toBe("user1@gmail.com");
+    expect(m.recommend('user1@gmail.co')).toBe("user1@gmail.com");
+    expect(m.recommend('user1@googlo')).toBeFalsy();
+
+
+    expect(m.recommend('user1@example.con')).toBe("user1@example.com");
+    expect(m.recommend('user1@example.col')).toBe("user1@example.com");
+    expect(m.recommend('user2@yahoo.cu.uk')).toBe("user2@yahoo.co.uk");
+    expect(m.recommend('user3@domain.ork')).toBe("user3@domain.org");
+    expect(m.recommend('user4@domain.met')).toBe("user4@domain.net");
+    expect(m.recommend('user5@domain.unknown')).toBeFalsy();
+    expect(m.recommend('user6@domain.xyz')).toBeFalsy();
+});
+
 test('isInvalid for invalid TLDs', () => {
     const m = new mial.Mial({
         tlds: [
             'com',
-            'net',
+            'NET',
             'org',
             'ch',
             'cz',
             'xn--vermgensberater-ctb',
+        ],
+        domains: [
+            'valid.com',
+            'valid.ch',
+            'valid.cz',
+            'valid.xn--vermgensberater-ctb',
         ]
     });
+
+    // Ensure uppercase TLDs also work
+    expect(m.isInvalid('test@example.COM')).toBeFalsy();
+    expect(m.isInvalid('test@example.NET')).toBeFalsy();
+    expect(m.isInvalid('test@example.ORG')).toBeFalsy();
+    expect(m.isInvalid('test@example.CH')).toBeFalsy();
+    expect(m.isInvalid('test@example.CZ')).toBeFalsy();
+    expect(m.isInvalid('test@example.XN--VERMGENSBERATER-CTB')).toBeFalsy();
 
     expect(m.isInvalid('test@example.invalid')).toBeTruthy();
     expect(m.isInvalid('test@example.xyz')).toBeTruthy();
@@ -125,6 +171,14 @@ test('isInvalid for invalid TLDs', () => {
     expect(m.isInvalid('USER8@DOMAIN.ORG')).toBeFalsy();
     expect(m.isInvalid('USER9@DOMAIN.CH')).toBeFalsy();
     expect(m.isInvalid('USER10@DOMAIN.CZ')).toBeFalsy();
+
+
+    // Test that domains still work
+    expect(m.isInvalid('valid@valid.com')).toBeFalsy();
+    expect(m.isInvalid('valid@valid.ch')).toBeFalsy();
+    expect(m.isInvalid('valid@valid.cz')).toBeFalsy();
+    expect(m.isInvalid('valid@valid.xn--vermgensberater-ctb')).toBeFalsy();
+
 });
 
 test('normalizeDomain', () => {
@@ -140,3 +194,60 @@ test('normalizeDomain', () => {
     expect(mial.normalizeDomain('example.invalid')).toBe('example.invalid');
     expect(mial.normalizeDomain('EXAMPLE.INVALID')).toBe('example.invalid');
 });
+
+test('does not recommend similar TLDs with Levenshtein distance of 1', () => {
+    // TLDs 'cz' and 'ch' have a Levenshtein distance of 1, so they should not be recommended interchangeably.
+    const m = new mial.Mial({
+        domains: [
+            'example.com',
+            'bluewin.ch',
+        ],
+        tlds: [
+            'com',
+            'cz',
+            'ch',
+        ]
+    });
+
+    // Ensure 'cz' is not recommended as 'ch' and vice versa
+    expect(m.recommend('user1@example.cz')).toBeFalsy();
+    expect(m.recommend('user2@example.ch')).toBeFalsy();
+
+    // Ensure valid TLDs are still recommended correctly
+    expect(m.recommend('user3@example.con')).toBe("user3@example.com");
+    expect(m.recommend('user4@example.czz')).toBeFalsy();
+    expect(m.recommend('user5@example.chh')).toBeFalsy();
+
+    // Ensure other domains are recommended correctly
+    expect(m.recommend('user6@bluewin.cn')).toBe("user6@bluewin.ch");
+    expect(m.recommend('user7@bluewin.ch')).toBeFalsy();
+    expect(m.recommend('user8@bluewin.cnn')).toBeFalsy();
+});
+
+
+test('dont recommend domain if another already matches', () => {
+
+    const m = new mial.Mial({
+        domains: [
+            'gmail.com',
+            'mail.com',
+        ],
+    });
+
+    expect(m.recommend('test@gmail.com')).toBeFalsy();
+    expect(m.recommend('test@mail.com')).toBeFalsy();
+
+
+    const m2 = new mial.Mial({
+        domains: [
+            'mail.com',
+            'gmail.com',
+
+        ],
+    });
+
+    expect(m2.recommend('test@gmail.com')).toBeFalsy();
+    expect(m2.recommend('test@mail.com')).toBeFalsy();
+});
+
+

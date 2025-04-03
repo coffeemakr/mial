@@ -49,6 +49,8 @@ async function fetchTLDs() {
   tlds = tlds.map((line) => line.trim());
   // Remove empty lines
   tlds = tlds.filter((line) => line.length > 0);
+  // Lowercase all TLDs
+  tlds = tlds.map((line) => line.toLowerCase());
 
   console.log(tlds);
 
