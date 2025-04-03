@@ -9,7 +9,28 @@
   },
   "scripts": {
     "build": "tsc",
-    "test": "tsc && jest --silent false"
+    "test": "tsc && jest --silent false",
+    "download-tlds": "curl https://data.iana.org/TLD/tlds-alpha-by-domain.txt -o- | tr '\\n' ' ' | sed 's/ /, /g' > tlds.json",
+    "prepare": "yarn build"
   },
-  "packageManager": "yarn@3.4.1"
+  "packageManager": "yarn@4.8.1",
+  "description": "A library designed to suggest better email domains and reduce errors effectively.",
+  "keywords": [
+    "email",
+    "recommendation",
+    "levenshtein",
+    "domains"
+  ],
+  "author": "coffeemakr <github@unstable.ch>",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/coffeemakr/mial.git"
+  },
+  "files": [
+    "mial.js",
+    "mial.d.ts",
+    "tlds.js",
+    "tlds.d.ts"
+  ],
+  "types": "mial.d.ts"
 }

@@ -1,6 +1,17 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.Mial = exports.hasLevensthein1Distance = void 0;
+exports.Mial = exports.hasLevensthein1Distance = exports.normalizeDomain = void 0;
+function normalizeDomain(domain) {
+    domain = domain.toLowerCase();
+    try {
+        const url = new URL('http://' + domain);
+        domain = url.hostname;
+    }
+    catch (_a) {
+    }
+    return domain;
+}
+exports.normalizeDomain = normalizeDomain;
 function hasOneCharacterOmitted(first, second) {
     if ((first.length - 1) == second.length) {
         return hasOneCharacterOmitted(second, first);
@@ -50,7 +61,7 @@ class Mial {
         const parts = mail.split('@');
         console.log(parts);
         if (parts.length == 2) {
-            const domain = parts[1];
+            const domain = normalizeDomain(parts[1]);
             for (let checkDomain of this.config.domains) {
                 if (hasLevensthein1Distance(checkDomain, domain)) {
                     return parts[0] + '@' + checkDomain;
@@ -58,6 +69,24 @@ class Mial {
             }
         }
         return undefined;
+    }
+    isInvalid(mail) {
+        const parts = mail.split('@');
+        if (parts.length == 2) {
+            const domain = normalizeDomain(parts[1]);
+            if (this.config.domains && this.config.domains.length > 0) {
+                if (this.config.domains.indexOf(domain) >= 0) {
+                    return false;
+                }
+            }
+            if (this.config.tlds && this.config.tlds.length > 0) {
+                const tld = domain.split('.').pop();
+                if (tld && this.config.tlds.indexOf(tld) < 0) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 }
 exports.Mial = Mial;
