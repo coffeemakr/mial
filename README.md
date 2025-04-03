@@ -40,7 +40,7 @@ const recommendation = mial.recommend(email);
 const isInvalid = mial.isInvalid(email);
 
 console.log(`Recommendation: ${recommendation}`); // Suggests 'user@gmail.com'
-console.log(`Is Invalid: ${isInvalid}`); // Returns true
+console.log(`Is Invalid: ${isInvalid}`); // Returns false
 ```
 ## Contributing
 Contributions are welcome! Please open an issue or submit a pull request.
