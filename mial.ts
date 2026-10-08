@@ -98,7 +98,7 @@ export class Mial {
     private readonly allowedTLDs?: string[];
 
     constructor(config: MialConfiguration) {
-        this.domains = config.domains;
+        this.domains = config.domains.map(domain => normalizeDomain(domain));
         const normalizedTLDs = config.tlds ? config.tlds.map(tld => normalizeDomain(tld)) : [];
         this.allowedTLDs = normalizedTLDs;
     }
