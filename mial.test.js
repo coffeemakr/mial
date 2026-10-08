@@ -196,6 +196,25 @@ test('normalizeDomain', () => {
     expect(mial.normalizeDomain('EXAMPLE.INVALID')).toBe('example.invalid');
 });
 
+test('normalizes the configured domains', () => {
+    const m = new mial.Mial({
+        domains: [
+            'GMail.COM',
+            'Example.Vermögensberater',
+        ],
+        tlds: [
+            'com',
+        ]
+    });
+
+    expect(m.recommend('test@gmail.com')).toBeFalsy();
+    expect(m.recommend('test@gmial.com')).toBe("test@gmail.com");
+    expect(m.recommend('test@example.vermögensberater')).toBeFalsy();
+    expect(m.recommend('test@exmple.vermögensberater')).toBe("test@example.xn--vermgensberater-ctb");
+    expect(m.isInvalid('test@gmail.com')).toBeFalsy();
+    expect(m.isInvalid('test@example.vermögensberater')).toBeFalsy();
+});
+
 test('does not recommend similar TLDs with Levenshtein distance of 1', () => {
     // TLDs 'cz' and 'ch' have a Levenshtein distance of 1, so they should not be recommended interchangeably.
     const m = new mial.Mial({
