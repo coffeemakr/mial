@@ -1,0 +1,46 @@
+name: Update TLDs
+
+on:
+  # Every Monday at 04:17 UTC
+  schedule:
+    - cron: "17 4 * * 1"
+
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+# Never run two updates at once, they would push to the same branch
+concurrency:
+  group: "update-tlds"
+  cancel-in-progress: false
+
+jobs:
+  update-tlds:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+      - name: Download TLDs
+        id: tlds
+        # The script only uses Node built-ins, no install needed
+        run: node scripts/downloadTlds.mjs
+      # Opens a pull request if tlds.js changed, updates the open one otherwise.
+      # Does nothing when the list is unchanged.
+      - name: Create pull request
+        uses: peter-evans/create-pull-request@v8
+        with:
+          branch: chore/update-tlds
+          delete-branch: true
+          add-paths: tlds.js
+          commit-message: "chore: update TLDs to IANA version ${{ steps.tlds.outputs.version }}"
+          title: "chore: update TLDs"
+          body: |
+            Updates `tlds.js` to version `${{ steps.tlds.outputs.version }}` of the
+            [IANA TLD list](https://data.iana.org/TLD/tlds-alpha-by-domain.txt).
