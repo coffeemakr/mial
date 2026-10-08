@@ -10,7 +10,7 @@
         "preview": "http-server dist --port 3000 "
     },
     "dependencies": {
-        "mial": "file:.."
+        "mial": "workspace:*"
     },
     "devDependencies": {
         "esbuild": "^0.25.2",
