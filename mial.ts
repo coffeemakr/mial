@@ -80,12 +80,12 @@ export function hasLevensthein1Distance(first: string, second: string): boolean 
 /**
  * Extracts the top-level domain (TLD) from an email address.
  * @param mail The email address to extract the TLD from.
- * @returns The TLD if present, otherwise null.
+ * @returns The normalized (lowercased, punycoded) TLD if present, otherwise null.
  */
 export function extractTLD(mail: string): string | null {
     const parts = mail.split('@');
     if (parts.length === 2) {
-        const domainParts = parts[1].split('.');
+        const domainParts = normalizeDomain(parts[1]).split('.');
         if (domainParts.length > 1) {
             return domainParts.pop() || null;
         }
