@@ -4,7 +4,7 @@
   "main": "mial.js",
   "license": "MIT",
   "devDependencies": {
-    "jest": "^29.5.0",
+    "jest": "^30.5.2",
     "typescript": "^7.0.2"
   },
   "scripts": {
