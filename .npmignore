@@ -1,7 +1,6 @@
 *.test.js
 *.ts
-.yarn/
-.yarnrc.yml
+pnpm-lock.yaml
 tsconfig.json
 .gitignore
 .vscode/
