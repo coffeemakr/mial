@@ -46,9 +46,7 @@ jobs:
         with:
           node-version-file: .nvmrc
           cache: pnpm
-          cache-dependency-path: |
-            pnpm-lock.yaml
-            example/pnpm-lock.yaml
+      # Installs the whole workspace, including the example
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
         working-directory: .
@@ -57,7 +55,5 @@ jobs:
           pnpm run download-tlds
           pnpm run build
         working-directory: .
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
       - name: Build
         run: pnpm run build

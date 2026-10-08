@@ -35,6 +35,7 @@ jobs:
         uses: pnpm/action-setup@v6
       - name: Setup Node
         uses: actions/setup-node@v4
+      # Installs the whole workspace, including the example
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
         working-directory: .
@@ -43,8 +44,6 @@ jobs:
           pnpm run download-tlds
           pnpm run build
         working-directory: .
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
       - name: Build
         run: pnpm run build
       - name: Upload artifact
