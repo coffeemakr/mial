@@ -16,6 +16,10 @@ async function fetchTLDs() {
 
         // Process data when fully received
         res.on("end", () => {
+          if (res.statusCode !== 200) {
+            reject(new Error(`Error fetching TLDs: HTTP ${res.statusCode}`));
+            return;
+          }
           const lines = data.split("\n");
           resolve(lines);
         });
@@ -51,6 +55,14 @@ async function fetchTLDs() {
   tlds = tlds.filter((line) => line.length > 0);
   // Lowercase all TLDs
   tlds = tlds.map((line) => line.toLowerCase());
+  // Deduplicate and sort, so the committed file only changes when the list does
+  tlds = [...new Set(tlds)].sort();
+
+  // Refuse to overwrite the list with something that is not a TLD list
+  const invalid = tlds.filter((tld) => !/^[a-z0-9-]+$/.test(tld));
+  if (tlds.length === 0 || invalid.length > 0) {
+    throw new Error(`Unexpected TLD list: ${JSON.stringify(invalid.slice(0, 5))}`);
+  }
 
   console.log(tlds);
 
@@ -58,12 +70,20 @@ async function fetchTLDs() {
   const __filename = fileURLToPath(import.meta.url);
   const __dirname = path.dirname(__filename);
 
-  // Write TLDs to a file as a JavaScript module
+  // Write TLDs to a file as a JavaScript module, one TLD per line.
+  // The version is left out of the file, as it changes daily even when the list does not.
   const outputPath = path.resolve(__dirname, "../tlds.js");
-  const versionComment = version ? `// Version: ${version}\n` : "";
-const fileContent = `${versionComment}// Auto-generated file\nexport const tlds = ${JSON.stringify(
-    tlds
-)};\n`;
+  const fileContent = `// Auto-generated file\nexport const tlds = [\n${tlds
+    .map((tld) => `  ${JSON.stringify(tld)},\n`)
+    .join("")}];\n`;
   fs.writeFileSync(outputPath, fileContent, "utf8");
   console.log(`TLDs written to ${outputPath}`);
-})();
+
+  // Expose the version to GitHub Actions
+  if (process.env.GITHUB_OUTPUT && version) {
+    fs.appendFileSync(process.env.GITHUB_OUTPUT, `version=${version}\n`);
+  }
+})().catch((err) => {
+  console.error(err);
+  process.exit(1);
+});
