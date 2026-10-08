@@ -29,6 +29,8 @@
   "files": [
     "mial.js",
     "mial.d.ts",
+    "domains.js",
+    "domains.d.ts",
     "tlds.js",
     "tlds.d.ts"
   ],

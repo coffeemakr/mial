@@ -1,49 +1,8 @@
 import { Mial } from "mial";
+import { domains } from "mial/domains";
 import { tlds } from "mial/tlds";
 
-const mial = new Mial({
-  tlds,
-  // Most common email domains (germanyn, switzerland, usa, etc.)
-  domains: [
-    "gmail.com",
-    "yahoo.com",
-    "hotmail.com",
-    "outlook.com",
-    "icloud.com",
-    "live.com",
-    "aol.com",
-    "mail.com",
-    "protonmail.com",
-    "gmx.com",
-    "gmx.ch",
-    "bluewin.ch",
-    "web.de",
-    "yandex.com",
-    "mail.ru",
-    "zoho.com",
-    "fastmail.com",
-    "t-online.de",
-    "freenet.de",
-    "1und1.de",
-    "posteo.de",
-    "t-online.ch",
-    "swisscom.ch",
-    "sunrise.ch",
-    "telekom.de",
-    "vodafone.de",
-    "o2.de",
-    "unitymedia.de",
-    "kabelbw.de",
-    "kabeldeutschland.de",
-    "alice.de",
-    "versatel.de",
-    "netcologne.de",
-    "netcable.de",
-    "m-net.de",
-    "1und1.com",
-    "webmail.co.za",
-  ],
-});
+const mial = new Mial({ tlds, domains });
 
 const emailInput = document.getElementById("email-input");
 

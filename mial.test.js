@@ -1,4 +1,5 @@
 const mial = require('./mial');
+const { domains } = require('./domains');
 
 test('levelstein with omittion', () => {
     expect(mial.hasLevensthein1Distance('test1', 'test')).toBeTruthy();
@@ -250,4 +251,28 @@ test('dont recommend domain if another already matches', () => {
     expect(m2.recommend('test@mail.com')).toBeFalsy();
 });
 
+test('recommended domains are normalized and unique', () => {
+    expect(new Set(domains).size).toBe(domains.length);
+    for (const domain of domains) {
+        expect(mial.normalizeDomain(domain)).toBe(domain);
+    }
+});
 
+test('recommends with the recommended domains', () => {
+    const m = new mial.Mial({ domains: [...domains, 'example.org'] });
+
+    // Listed domains are never corrected
+    for (const domain of domains) {
+        expect(m.recommend('test@' + domain)).toBeFalsy();
+    }
+    expect(m.recommend('test@example.org')).toBeFalsy();
+
+    expect(m.recommend('test@gmial.com')).toBe("test@gmail.com");
+    expect(m.recommend('test@bluewn.ch')).toBe("test@bluewin.ch");
+    expect(m.recommend('test@exmple.org')).toBe("test@example.org");
+
+    // The most common provider wins over regional variants
+    expect(m.recommend('test@hotmail.co')).toBe("test@hotmail.com");
+    expect(m.recommend('test@yahoo.co')).toBe("test@yahoo.com");
+    expect(m.recommend('test@gmx.co')).toBe("test@gmx.com");
+});
