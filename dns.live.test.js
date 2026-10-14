@@ -1,10 +1,16 @@
-// Queries the real DNS over HTTPS endpoint. Run with `pnpm run test:live`.
+// Queries a real DNS over HTTPS endpoint. Run with `pnpm run test:live`, or set
+// MIAL_LIVE_DNS to the endpoint to test, e.g. `MIAL_LIVE_DNS=https://cloudflare-dns.com/dns-query jest dns.live`.
 const dns = require('./dns');
 
-const live = process.env.MIAL_LIVE_DNS ? describe : describe.skip;
+const endpoint = process.env.MIAL_LIVE_DNS;
+const live = endpoint ? describe : describe.skip;
 
-live('DnsChecker against ' + dns.DEFAULT_DOH_ENDPOINT, () => {
-    const checker = new dns.DnsChecker({ timeoutMs: 3000, failureThreshold: Infinity });
+live(`DnsChecker against ${endpoint}`, () => {
+    let checker;
+
+    beforeAll(() => {
+        checker = new dns.DnsChecker({ endpoint, timeoutMs: 3000, failureThreshold: Infinity });
+    });
 
     test.each([
         ['user@gmail.com', 'valid', 'mx'],

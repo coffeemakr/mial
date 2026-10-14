@@ -1,11 +1,5 @@
 import { normalizeDomain } from './mial';
 
-/**
- * Default DNS over HTTPS endpoint. It sends `Access-Control-Allow-Origin: *`, so it can be
- * used from browsers, and it is reachable over HTTP/3.
- */
-export const DEFAULT_DOH_ENDPOINT = 'https://cloudflare-dns.com/dns-query';
-
 export const DNS_TYPE_A = 1;
 export const DNS_TYPE_SOA = 6;
 export const DNS_TYPE_MX = 15;
@@ -62,13 +56,13 @@ export interface DomainCheckResult {
 
 export interface DnsCheckerConfiguration {
     /**
-     * DNS over HTTPS endpoint (RFC 8484) that accepts GET requests.
+     * DNS over HTTPS endpoint (RFC 8484) that accepts GET requests, e.g.
+     * `https://cloudflare-dns.com/dns-query`. The domains that are checked are sent to it.
      *
      * In browsers the endpoint must send an `Access-Control-Allow-Origin` header, also over HTTP/3.
      * Use a proxy on your own domain for a resolver that does not.
-     * @default DEFAULT_DOH_ENDPOINT
      */
-    endpoint?: string;
+    endpoint: string;
     /**
      * Time budget for a whole check in milliseconds, including the A and AAAA queries if
      * `requireMx` is false. A check that takes longer resolves with `unknown`.
@@ -115,6 +109,10 @@ export interface DnsCheckerConfiguration {
     cooldownMs?: number;
     /**
      * Fetch implementation used for the requests, e.g. to add headers or for tests.
+     *
+     * Some resolvers require HTTP/2 and reject HTTP/1.1 with HTTP 505. The global `fetch` of Node.js
+     * only uses HTTP/2 since Node 26. For older versions, pass a fetch with HTTP/2 support for these
+     * resolvers, e.g. from undici with `new Agent({ allowH2: true })`.
      * @default globalThis.fetch
      */
     fetch?: (input: string, init: RequestInit) => Promise<Response>;
@@ -388,8 +386,11 @@ export class DnsChecker {
     private consecutiveFailures = 0;
     private circuitOpenUntil = 0;
 
-    constructor(config: DnsCheckerConfiguration = {}) {
-        this.endpoint = config.endpoint ?? DEFAULT_DOH_ENDPOINT;
+    constructor(config: DnsCheckerConfiguration) {
+        if (!config || !config.endpoint) {
+            throw new TypeError('DnsChecker requires an endpoint');
+        }
+        this.endpoint = config.endpoint;
         this.timeoutMs = config.timeoutMs ?? 2000;
         this.requireMx = config.requireMx ?? true;
         this.knownDomains = (config.knownDomains ?? []).map(domain => normalizeDomain(domain));
