@@ -1,5 +1,5 @@
-const mial = require('./mial');
-const { domains } = require('./domains');
+const mial = require('../dist/mial');
+const { domains } = require('../dist/domains');
 
 test('levelstein with omittion', () => {
     expect(mial.hasLevensthein1Distance('test1', 'test')).toBeTruthy();

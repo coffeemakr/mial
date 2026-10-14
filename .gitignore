@@ -1,7 +1,2 @@
 node_modules/
-mial.js
-mial.d.ts
-domains.js
-domains.d.ts
-dns.js
-dns.d.ts
+dist/

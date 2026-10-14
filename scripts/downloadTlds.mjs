@@ -68,10 +68,10 @@ async function fetchTLDs() {
   const __filename = fileURLToPath(import.meta.url);
   const __dirname = path.dirname(__filename);
 
-  // Write TLDs to a file as a JavaScript module, one TLD per line.
+  // Write TLDs to a file as a TypeScript module, one TLD per line.
   // The version is left out of the file, as it changes daily even when the list does not.
-  const outputPath = path.resolve(__dirname, "../tlds.js");
-  const fileContent = `// Auto-generated file\nexport const tlds = [\n${tlds
+  const outputPath = path.resolve(__dirname, "../src/tlds.ts");
+  const fileContent = `// Auto-generated file\n/**\n * A list of valid top-level domains (TLDs).\n * This is auto-generated and should match the TLDs fetched from IANA.\n */\nexport const tlds: string[] = [\n${tlds
     .map((tld) => `  ${JSON.stringify(tld)},\n`)
     .join("")}];\n`;
   fs.writeFileSync(outputPath, fileContent, "utf8");

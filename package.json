@@ -1,14 +1,14 @@
 {
   "name": "mial",
   "version": "1.2.0",
-  "main": "mial.js",
+  "main": "dist/mial.js",
   "license": "MIT",
   "devDependencies": {
     "jest": "^30.5.2",
     "typescript": "^7.0.2"
   },
   "scripts": {
-    "prepublish": "pnpm run build && pnpm run download-tlds",
+    "prepublish": "pnpm run download-tlds && pnpm run build",
     "build": "tsc && tsc --emitDeclarationOnly --removeComments false",
     "download-tlds": "node scripts/downloadTlds.mjs",
     "update-resolvers": "tsc && node scripts/updateResolvers.mjs",
@@ -30,14 +30,33 @@
     "url": "git+https://github.com/coffeemakr/mial.git"
   },
   "files": [
-    "mial.js",
-    "mial.d.ts",
-    "domains.js",
-    "domains.d.ts",
-    "dns.js",
-    "dns.d.ts",
-    "tlds.js",
-    "tlds.d.ts"
+    "dist"
   ],
-  "types": "mial.d.ts"
+  "types": "dist/mial.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/mial.d.ts",
+      "default": "./dist/mial.js"
+    },
+    "./domains": {
+      "types": "./dist/domains.d.ts",
+      "default": "./dist/domains.js"
+    },
+    "./dns": {
+      "types": "./dist/dns.d.ts",
+      "default": "./dist/dns.js"
+    },
+    "./tlds": {
+      "types": "./dist/tlds.d.ts",
+      "default": "./dist/tlds.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "typesVersions": {
+    "*": {
+      "*": [
+        "dist/*"
+      ]
+    }
+  }
 }

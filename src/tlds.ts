@@ -1,5 +1,9 @@
 // Auto-generated file
-export const tlds = [
+/**
+ * A list of valid top-level domains (TLDs).
+ * This is auto-generated and should match the TLDs fetched from IANA.
+ */
+export const tlds: string[] = [
   "aaa",
   "aarp",
   "abb",

@@ -1,6 +1,6 @@
 // Queries a real DNS over HTTPS endpoint. Run with `pnpm run test:live`, or set
 // MIAL_LIVE_DNS to the endpoint to test, e.g. `MIAL_LIVE_DNS=https://cloudflare-dns.com/dns-query jest dns.live`.
-const dns = require('./dns');
+const dns = require('../dist/dns');
 
 const endpoint = process.env.MIAL_LIVE_DNS;
 const live = endpoint ? describe : describe.skip;

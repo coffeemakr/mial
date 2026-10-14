@@ -1,7 +1,0 @@
-*.test.js
-*.ts
-pnpm-lock.yaml
-tsconfig.json
-.gitignore
-.vscode/
-.git/

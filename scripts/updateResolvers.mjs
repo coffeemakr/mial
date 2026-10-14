@@ -5,7 +5,7 @@ import https from "https";
 import path from "path";
 import { fileURLToPath } from "url";
 import { promisify } from "util";
-import dns from "../dns.js";
+import dns from "../dist/dns.js";
 
 // Tests public DNS over HTTPS resolvers and writes the results as a table to README.md,
 // between the resolvers:start and resolvers:end comments.
