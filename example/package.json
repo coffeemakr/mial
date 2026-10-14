@@ -13,7 +13,7 @@
         "mial": "workspace:*"
     },
     "devDependencies": {
-        "esbuild": "^0.25.2",
+        "esbuild": "^0.28.2",
         "http-server": "^14.1.1"
     },
     "author": "",
