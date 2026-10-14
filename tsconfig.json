@@ -8,8 +8,11 @@
         "skipLibCheck": true,
         "forceConsistentCasingInFileNames": true,
         "removeComments": true,
-        "declaration": true
+        "declaration": true,
+        "rootDir": "src",
+        "outDir": "dist"
     },
+    "include": ["src"],
     "$schema": "https://json.schemastore.org/tsconfig",
     "display": "Recommended"
 }

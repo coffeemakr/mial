@@ -1,5 +1,5 @@
 const http = require('node:http');
-const dns = require('./dns');
+const dns = require('../dist/dns');
 
 // Responses captured from https://cloudflare-dns.com/dns-query
 const fixtures = {
