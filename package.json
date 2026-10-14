@@ -9,17 +9,19 @@
   },
   "scripts": {
     "prepublish": "pnpm run build && pnpm run download-tlds",
-    "build": "tsc",
+    "build": "tsc && tsc --emitDeclarationOnly --removeComments false",
     "download-tlds": "node scripts/downloadTlds.mjs",
-    "test": "tsc && jest --silent false"
+    "test": "tsc && jest --silent false",
+    "test:live": "tsc && MIAL_LIVE_DNS=1 jest dns.live"
   },
   "packageManager": "pnpm@12.10.1",
   "description": "A library designed to suggest better email domains and reduce errors effectively.",
   "keywords": [
     "email",
     "recommendation",
-    "levenshtein",
-    "domains"
+    "domains",
+    "dns",
+    "mx"
   ],
   "author": "coffeemakr <github@unstable.ch>",
   "repository": {
@@ -31,6 +33,8 @@
     "mial.d.ts",
     "domains.js",
     "domains.d.ts",
+    "dns.js",
+    "dns.d.ts",
     "tlds.js",
     "tlds.d.ts"
   ],

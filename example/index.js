@@ -1,8 +1,15 @@
 import { Mial } from "mial";
 import { domains } from "mial/domains";
 import { tlds } from "mial/tlds";
+import { DnsChecker } from "mial/dns";
 
 const mial = new Mial({ tlds, domains });
+const dnsChecker = new DnsChecker({ knownDomains: domains });
+
+// Wait until the user stops typing before looking up the domain
+const DNS_CHECK_DELAY_MS = 400;
+let dnsCheckTimer;
+let dnsCheckController;
 
 const emailInput = document.getElementById("email-input");
 
@@ -12,6 +19,7 @@ const recommendationContainer = document.getElementById("recommendation-containe
 
 const invalidMessage = document.getElementById("invalid-message");
 const recommendationMessage = document.getElementById("recommendation-message");
+const dnsMessage = document.getElementById("dns-message");
 
 emailInput.addEventListener("input", (event) => {
   const email = event.target.value;
@@ -24,6 +32,7 @@ emailInput.addEventListener("input", (event) => {
   emailInput.classList.remove("invalid"); // Remove the invalid class
   invalidMessage.style.display = "none"; // Hide "The email address might be incorrect" by default
   recommendationMessage.style.display = "none"; // Hide "Did you mean:" by default
+  dnsMessage.style.display = "none"; // Hide the DNS message by default
   console.log(recommendation, 'recommendation', email, isInvalid);
 
   // Show the container and invalid message if the email is invalid
@@ -45,5 +54,28 @@ emailInput.addEventListener("input", (event) => {
       emailInput.classList.remove("invalid"); // Remove the invalid class
     });
     recommendationList.appendChild(recommendationItem);
+  }
+
+  // Cancel the check of the previous input
+  clearTimeout(dnsCheckTimer);
+  dnsCheckController?.abort();
+
+  // Only look up the domain if there is no other hint
+  if (!isInvalid && !recommendation) {
+    const controller = new AbortController();
+    dnsCheckController = controller;
+    dnsCheckTimer = setTimeout(async () => {
+      try {
+        const result = await dnsChecker.check(email, { signal: controller.signal });
+        // Only warn on a definitive answer, never on "unknown"
+        if (result.status === "invalid") {
+          recommendationContainer.style.display = "block";
+          dnsMessage.style.display = "block";
+          emailInput.classList.add("invalid");
+        }
+      } catch {
+        // Aborted by a newer input
+      }
+    }, DNS_CHECK_DELAY_MS);
   }
 });
