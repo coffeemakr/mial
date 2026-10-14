@@ -4,7 +4,10 @@ import { tlds } from "mial/tlds";
 import { DnsChecker } from "mial/dns";
 
 const mial = new Mial({ tlds, domains });
-const dnsChecker = new DnsChecker({ knownDomains: domains });
+const dnsChecker = new DnsChecker({
+  endpoint: "https://cloudflare-dns.com/dns-query",
+  knownDomains: domains,
+});
 
 // Wait until the user stops typing before looking up the domain
 const DNS_CHECK_DELAY_MS = 400;

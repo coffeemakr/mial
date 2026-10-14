@@ -11,8 +11,9 @@
     "prepublish": "pnpm run build && pnpm run download-tlds",
     "build": "tsc && tsc --emitDeclarationOnly --removeComments false",
     "download-tlds": "node scripts/downloadTlds.mjs",
+    "update-resolvers": "tsc && node scripts/updateResolvers.mjs",
     "test": "tsc && jest --silent false",
-    "test:live": "tsc && MIAL_LIVE_DNS=1 jest dns.live"
+    "test:live": "tsc && MIAL_LIVE_DNS=https://cloudflare-dns.com/dns-query jest dns.live"
   },
   "packageManager": "pnpm@12.10.1",
   "description": "A library designed to suggest better email domains and reduce errors effectively.",

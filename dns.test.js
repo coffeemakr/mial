@@ -18,6 +18,8 @@ const fixtures = {
     'www.github.com MX': '000081800001000200000000037777770667697468756203636f6d00000f0001c00c0005000100000e100002c010c010000f00010000012c002700000a6769746875622d636f6d046d61696c0a70726f74656374696f6e076f75746c6f6f6bc017',
 };
 
+const ENDPOINT = 'https://doh.example/dns-query';
+
 const TYPE_NAMES = { 1: 'A', 15: 'MX', 28: 'AAAA' };
 
 function bytes(hex) {
@@ -108,6 +110,14 @@ describe('DnsChecker', () => {
     });
 
     test.each([
+        [undefined],
+        [{}],
+        [{ endpoint: '' }],
+    ])('requires an endpoint (%p)', (config) => {
+        expect(() => new dns.DnsChecker(config)).toThrow(TypeError);
+    });
+
+    test.each([
         ['user@gmail.com', 'valid', 'mx'],
         ['User@GMAIL.com', 'valid', 'mx'],
         ['gmail.com', 'valid', 'mx'],
@@ -118,35 +128,35 @@ describe('DnsChecker', () => {
         ['user@blogspot.com', 'invalid', 'no-mx'],
         ['user@gmial.com', 'unknown', 'dns-error'],
     ])('%s is %s (%s)', async (email, status, reason) => {
-        const checker = new dns.DnsChecker({ fetch: fixtureFetch() });
+        const checker = new dns.DnsChecker({ endpoint: ENDPOINT, fetch: fixtureFetch() });
         expect(await checker.check(email)).toEqual({ status, reason, domain: expect.any(String) });
     });
 
     test('accepts A and AAAA records without requireMx', async () => {
         const fetch = fixtureFetch();
-        const checker = new dns.DnsChecker({ fetch, requireMx: false });
+        const checker = new dns.DnsChecker({ endpoint: ENDPOINT, fetch, requireMx: false });
         expect(await checker.check('user@blogspot.com')).toEqual({ status: 'valid', reason: 'implicit-mx', domain: 'blogspot.com' });
         expect(fetch.mock.calls.map(([url]) => questionOf(url)).sort()).toEqual(['blogspot.com A', 'blogspot.com AAAA', 'blogspot.com MX']);
     });
 
     test('only sends one MX query with requireMx', async () => {
         const fetch = fixtureFetch();
-        await new dns.DnsChecker({ fetch }).check('user@blogspot.com');
+        await new dns.DnsChecker({ endpoint: ENDPOINT, fetch }).check('user@blogspot.com');
         expect(fetch.mock.calls.map(([url]) => questionOf(url))).toEqual(['blogspot.com MX']);
     });
 
     test('sends a GET request with only an Accept header', async () => {
         const fetch = fixtureFetch();
-        await new dns.DnsChecker({ fetch }).check('user@gmail.com');
+        await new dns.DnsChecker({ endpoint: ENDPOINT, fetch }).check('user@gmail.com');
         const [url, init] = fetch.mock.calls[0];
-        expect(url.startsWith(dns.DEFAULT_DOH_ENDPOINT + '?dns=')).toBe(true);
+        expect(url.startsWith(ENDPOINT + '?dns=')).toBe(true);
         expect(init.method).toBeUndefined();
         expect(init.headers).toEqual({ accept: 'application/dns-message' });
     });
 
     test('appends the query to an endpoint with parameters', async () => {
         const fetch = fixtureFetch();
-        await new dns.DnsChecker({ fetch, endpoint: 'https://example.org/dns?key=1' }).check('user@gmail.com');
+        await new dns.DnsChecker({ endpoint: ENDPOINT, fetch, endpoint: 'https://example.org/dns?key=1' }).check('user@gmail.com');
         expect(fetch.mock.calls[0][0].startsWith('https://example.org/dns?key=1&dns=')).toBe(true);
     });
 
@@ -154,6 +164,7 @@ describe('DnsChecker', () => {
         // The browser fetch throws an "Illegal invocation" if it is called with another `this`
         let calledWith = null;
         const checker = new dns.DnsChecker({
+            endpoint: ENDPOINT,
             fetch: function (url) {
                 calledWith = this;
                 return Promise.resolve(dnsResponse(bytes(fixtures[questionOf(url)])));
@@ -176,14 +187,14 @@ describe('DnsChecker', () => {
         [`user@${'abcdefghi.'.repeat(26)}com`, 'invalid', 'malformed'],
     ])('%s is %s (%s) without lookup', async (email, status, reason) => {
         const fetch = fixtureFetch();
-        const checker = new dns.DnsChecker({ fetch });
+        const checker = new dns.DnsChecker({ endpoint: ENDPOINT, fetch });
         expect(await checker.check(email)).toMatchObject({ status, reason });
         expect(fetch).not.toHaveBeenCalled();
     });
 
     test('does not look up known domains', async () => {
         const fetch = fixtureFetch();
-        const checker = new dns.DnsChecker({ fetch, knownDomains: ['Bluewin.ch'] });
+        const checker = new dns.DnsChecker({ endpoint: ENDPOINT, fetch, knownDomains: ['Bluewin.ch'] });
         expect(await checker.check('user@bluewin.ch')).toEqual({ status: 'valid', reason: 'known', domain: 'bluewin.ch' });
         expect(fetch).not.toHaveBeenCalled();
     });
@@ -196,14 +207,14 @@ describe('DnsChecker', () => {
         ['an answer to another question', async () => dnsResponse(bytes(fixtures['example.com MX']))],
         ['a query instead of a response', async () => dnsResponse(dns.encodeQuery('gmail.com', dns.DNS_TYPE_MX))],
     ])('is unknown on %s', async (name, fetchImpl) => {
-        const checker = new dns.DnsChecker({ fetch: jest.fn(fetchImpl) });
+        const checker = new dns.DnsChecker({ endpoint: ENDPOINT, fetch: jest.fn(fetchImpl) });
         expect(await checker.check('user@gmail.com')).toEqual({ status: 'unknown', reason: 'error', domain: 'gmail.com' });
     });
 
     test('is unknown after the time budget', async () => {
         jest.useFakeTimers();
         const fetch = hangingFetch();
-        const checker = new dns.DnsChecker({ fetch, timeoutMs: 1500 });
+        const checker = new dns.DnsChecker({ endpoint: ENDPOINT, fetch, timeoutMs: 1500 });
         const result = checker.check('user@gmail.com');
         await jest.advanceTimersByTimeAsync(1499);
         expect(fetch.mock.calls[0][1].signal.aborted).toBe(false);
@@ -216,7 +227,7 @@ describe('DnsChecker', () => {
         const fetch = jest.fn((url, init) => questionOf(url).endsWith(' MX')
             ? new Promise(resolve => setTimeout(() => resolve(dnsResponse(bytes(fixtures[questionOf(url)]))), 800))
             : hangingFetch()(url, init));
-        const checker = new dns.DnsChecker({ fetch, timeoutMs: 1000, requireMx: false });
+        const checker = new dns.DnsChecker({ endpoint: ENDPOINT, fetch, timeoutMs: 1000, requireMx: false });
         const result = checker.check('user@blogspot.com');
         await jest.advanceTimersByTimeAsync(1000);
         expect(await result).toMatchObject({ status: 'unknown', reason: 'timeout' });
@@ -225,7 +236,7 @@ describe('DnsChecker', () => {
     test('rejects if the caller aborts, but still caches the result', async () => {
         jest.useFakeTimers();
         const fetch = jest.fn(url => new Promise(resolve => setTimeout(() => resolve(dnsResponse(bytes(fixtures[questionOf(url)]))), 100)));
-        const checker = new dns.DnsChecker({ fetch });
+        const checker = new dns.DnsChecker({ endpoint: ENDPOINT, fetch });
         const controller = new AbortController();
         const result = checker.check('user@gmail.com', { signal: controller.signal });
         controller.abort();
@@ -237,13 +248,13 @@ describe('DnsChecker', () => {
 
     test('rejects if the signal is already aborted', async () => {
         const fetch = fixtureFetch();
-        const checker = new dns.DnsChecker({ fetch });
+        const checker = new dns.DnsChecker({ endpoint: ENDPOINT, fetch });
         await expect(checker.check('user@gmail.com', { signal: AbortSignal.abort() })).rejects.toThrow();
     });
 
     test('shares concurrent lookups of the same domain', async () => {
         const fetch = fixtureFetch();
-        const checker = new dns.DnsChecker({ fetch });
+        const checker = new dns.DnsChecker({ endpoint: ENDPOINT, fetch });
         const results = await Promise.all([checker.check('a@gmail.com'), checker.check('b@GMAIL.com')]);
         expect(results.map(result => result.status)).toEqual(['valid', 'valid']);
         expect(fetch).toHaveBeenCalledTimes(1);
@@ -252,7 +263,7 @@ describe('DnsChecker', () => {
     test('caches answers for their TTL, but at most maxTtl', async () => {
         jest.useFakeTimers();
         const fetch = fixtureFetch();
-        const checker = new dns.DnsChecker({ fetch, maxTtl: 300 });
+        const checker = new dns.DnsChecker({ endpoint: ENDPOINT, fetch, maxTtl: 300 });
         await checker.check('user@gmail.com'); // TTL 365
         await checker.check('user@blogspot.com'); // Negative TTL 60
         jest.advanceTimersByTime(59 * 1000);
@@ -269,7 +280,7 @@ describe('DnsChecker', () => {
 
     test('does not cache unknown results', async () => {
         const fetch = fixtureFetch();
-        const checker = new dns.DnsChecker({ fetch });
+        const checker = new dns.DnsChecker({ endpoint: ENDPOINT, fetch });
         await checker.check('user@gmial.com');
         await checker.check('user@gmial.com');
         expect(fetch).toHaveBeenCalledTimes(2);
@@ -277,7 +288,7 @@ describe('DnsChecker', () => {
 
     test('evicts the least recently used domain', async () => {
         const fetch = fixtureFetch();
-        const checker = new dns.DnsChecker({ fetch, cacheSize: 2 });
+        const checker = new dns.DnsChecker({ endpoint: ENDPOINT, fetch, cacheSize: 2 });
         await checker.check('user@gmail.com');
         await checker.check('user@example.com');
         await checker.check('user@gmail.com'); // Cached, now most recently used
@@ -292,7 +303,7 @@ describe('DnsChecker', () => {
     test('stops looking up domains after repeated failures', async () => {
         jest.useFakeTimers();
         const fetch = jest.fn(async () => { throw new TypeError('Failed to fetch'); });
-        const checker = new dns.DnsChecker({ fetch, failureThreshold: 3, cooldownMs: 30000 });
+        const checker = new dns.DnsChecker({ endpoint: ENDPOINT, fetch, failureThreshold: 3, cooldownMs: 30000 });
         for (let i = 0; i < 3; i++) {
             expect(await checker.check('user@gmail.com')).toMatchObject({ reason: 'error' });
         }
@@ -316,7 +327,7 @@ describe('DnsChecker', () => {
 
     test('resolver errors do not open the circuit', async () => {
         const fetch = fixtureFetch();
-        const checker = new dns.DnsChecker({ fetch, failureThreshold: 1 });
+        const checker = new dns.DnsChecker({ endpoint: ENDPOINT, fetch, failureThreshold: 1 });
         await checker.check('user@gmial.com');
         expect(await checker.check('user@gmail.com')).toMatchObject({ status: 'valid' });
     });
