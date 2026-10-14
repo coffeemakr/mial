@@ -49,6 +49,25 @@ const mial = new Mial({
 If a typo is one edit away from several domains, the first one in the list is recommended.
 Put your own domains first to give them priority.
 
+### DNS check
+`mial/dns` checks with DNS over HTTPS whether the domain of an address can receive email:
+
+```javascript
+import { DnsChecker } from "mial/dns";
+import { domains } from "mial/domains";
+
+const checker = new DnsChecker({ knownDomains: domains });
+
+const result = await checker.check("user@mial-does-not-exist.com", { signal });
+// { status: "invalid", reason: "nxdomain", domain: "mial-does-not-exist.com" }
+```
+
+The status is `invalid` only if the domain does not exist or has no MX record. Failures and
+timeouts result in `unknown`, which should not block the user.
+
+Only the domain is sent to the resolver, by default `https://cloudflare-dns.com/dns-query`.
+The options are documented in `DnsCheckerConfiguration`.
+
 ## Contributing
 Contributions are welcome! Please open an issue or submit a pull request.
 
