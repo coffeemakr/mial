@@ -64,8 +64,6 @@ async function fetchTLDs() {
     throw new Error(`Unexpected TLD list: ${JSON.stringify(invalid.slice(0, 5))}`);
   }
 
-  console.log(tlds);
-
   // Correctly derive __dirname for ES modules
   const __filename = fileURLToPath(import.meta.url);
   const __dirname = path.dirname(__filename);

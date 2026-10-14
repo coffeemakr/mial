@@ -132,8 +132,6 @@ export class Mial {
                             const tldIndex = domain.lastIndexOf(tld);
                             const correctedDomain = domain.substring(0, tldIndex) + matchingTLDs[0];
                             return parts[0] + '@' + correctedDomain;
-                        } else {
-                            console.log(`Multiple TLDs found for ${domain}: ${matchingTLDs.join(', ')}`);
                         }
                     }
                 }
