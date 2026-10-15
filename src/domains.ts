@@ -7,38 +7,85 @@
  * The most common providers therefore come first.
  */
 export const domains: string[] = [
-    // Global providers
+    // Google
     "gmail.com",
-    "yahoo.com",
-    "hotmail.com",
-    "outlook.com",
-    "icloud.com",
-    "live.com",
-    "aol.com",
-    "msn.com",
-    "mac.com",
     "googlemail.com",
+
+    // Yahoo
+    "yahoo.com",
     "ymail.com",
     "rocketmail.com",
+    "yahoo.de",
+    "yahoo.co.uk",
+    "yahoo.fr",
+    "yahoo.it",
+    "yahoo.es",
+    "yahoo.ca",
+    "yahoo.co.jp",
+    "yahoo.co.in",
+    "yahoo.com.br",
+    "yahoo.com.au",
+
+    // Microsoft
+    "hotmail.com",
+    "outlook.com",
+    "live.com",
+    "msn.com",
+    "hotmail.de",
+    "outlook.de",
+    "live.de",
+    "hotmail.ch",
+    "hotmail.co.uk",
+    "live.co.uk",
+    "hotmail.fr",
+    "live.fr",
+    "outlook.fr",
+    "hotmail.it",
+    "live.it",
+    "hotmail.es",
+    "outlook.es",
+    "live.nl",
+
+    // Apple
+    "icloud.com",
+    "me.com",
+    "mac.com",
+
+    // Proton
     "proton.me",
     "protonmail.com",
-    "mail.com",
-    "email.com",
+    "pm.me",
+    "protonmail.ch",
+
+    // Tuta 
+    "tuta.com",
+    "tutamail.com",
+    "tuta.io",
+    "tutanota.com",
+    "tutanota.de",
+    "keemail.me",
+
+    // GMX
     "gmx.com",
     "gmx.net",
+    "gmx.de",
+    "gmx.ch",
+    "gmx.at",
+
+    // Other global providers
+    "aol.com",
+    "mail.com",
+    "email.com",
     "zoho.com",
     "zohomail.com",
     "fastmail.com",
     "fastmail.fm",
-    "tutanota.com",
-    "tuta.com",
     "hey.com",
     "duck.com",
     "yandex.com",
 
     // Germany
     "web.de",
-    "gmx.de",
     "t-online.de",
     "freenet.de",
     "posteo.de",
@@ -53,33 +100,22 @@ export const domains: string[] = [
     "kabelbw.de",
     "unitybox.de",
     "ewe.net",
-    "hotmail.de",
-    "outlook.de",
-    "live.de",
-    "yahoo.de",
     "aol.de",
 
     // Switzerland
     "bluewin.ch",
-    "gmx.ch",
     "hispeed.ch",
     "sunrise.ch",
     "bluemail.ch",
     "swissonline.ch",
     "green.ch",
     "quickline.ch",
-    "hotmail.ch",
-    "protonmail.ch",
 
     // Austria
-    "gmx.at",
     "aon.at",
     "chello.at",
 
     // United Kingdom
-    "hotmail.co.uk",
-    "yahoo.co.uk",
-    "live.co.uk",
     "btinternet.com",
     "sky.com",
     "virginmedia.com",
@@ -89,30 +125,20 @@ export const domains: string[] = [
 
     // France
     "orange.fr",
-    "hotmail.fr",
-    "yahoo.fr",
     "wanadoo.fr",
     "free.fr",
     "sfr.fr",
     "laposte.net",
-    "live.fr",
-    "outlook.fr",
     "neuf.fr",
 
     // Italy
     "libero.it",
-    "hotmail.it",
-    "yahoo.it",
     "virgilio.it",
     "alice.it",
     "tiscali.it",
     "tin.it",
-    "live.it",
 
     // Spain
-    "hotmail.es",
-    "yahoo.es",
-    "outlook.es",
     "telefonica.net",
 
     // Netherlands and Belgium
@@ -122,7 +148,6 @@ export const domains: string[] = [
     "planet.nl",
     "home.nl",
     "xs4all.nl",
-    "live.nl",
     "telenet.be",
     "skynet.be",
 
@@ -135,7 +160,6 @@ export const domains: string[] = [
     "cox.net",
     "charter.net",
     "earthlink.net",
-    "yahoo.ca",
     "shaw.ca",
     "rogers.com",
     "sympatico.ca",
@@ -152,14 +176,10 @@ export const domains: string[] = [
     "naver.com",
     "daum.net",
     "hanmail.net",
-    "yahoo.co.jp",
-    "yahoo.co.in",
     "rediffmail.com",
-    "yahoo.com.br",
     "uol.com.br",
     "bol.com.br",
     "terra.com.br",
-    "yahoo.com.au",
     "bigpond.com",
     "optusnet.com.au",
     "interia.pl",
