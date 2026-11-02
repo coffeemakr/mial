@@ -527,7 +527,6 @@ export const tlds: string[] = [
   "health",
   "healthcare",
   "help",
-  "helsinki",
   "here",
   "hermes",
   "hiphop",
