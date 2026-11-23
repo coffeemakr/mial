@@ -1264,7 +1264,6 @@ export const tlds: string[] = [
   "wtf",
   "xbox",
   "xerox",
-  "xihuan",
   "xin",
   "xn--11b4c3d",
   "xn--1ck2e1b",
